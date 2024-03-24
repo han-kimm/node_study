@@ -1,0 +1,11 @@
+{
+  "name": "nodetest-8891",
+  "version": "1.0.0",
+  "description": "this is library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "han-kimm",
+  "license": "MIT"
+}
