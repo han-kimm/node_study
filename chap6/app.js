@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+const morgan = require('morgan')
+const cookieParser = require('cookie-parser')
 
 const app = express();
 
@@ -7,15 +9,37 @@ const router = express.Router()
 
 app.set('port', process.env.PORT || 3000)
 
+app.use(morgan('combined'))
+app.use(cookieParser('timeitem'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+// true면 qs라는 외부 라이브러리 사용
+
 app.use((req, res, next) => {
   console.log('Everything Everywhere All at Once')
   next();
   // next(error) 메서드에 인수가 있으면 에러처리가 됨
 })
 
+// app.use('/', router)
+
+// router.get('/', (req, res, next) => {
+//   console.log(1)
+//   next('router');
+//   // res.sendFile(path.join(__dirname, 'index.html'))
+
+// })
+
 app.get('/', (req, res, next) => {
   console.log(2)
-  next('router')
+  next()
+
+  res.cookie('name', encodeURIComponent('timetogo'), {
+    expires: new Date(Date.now() + 1000 * 3),
+    httpOnly: true,
+    path: '/',
+    signed: true,
+  })
   // res.json({ name: "it's me" })
   // json, send, end 한번에 여러개 보내면 에러
 
@@ -30,14 +54,13 @@ app.get('/', (req, res, next) => {
 app.get('/', (req, res, next) => {
   console.log(4)
   res.sendFile(path.join(__dirname, 'index.html'))
-})
 
-app.use('/', router)
-
-router.get('/', (req, res, next) => {
-  res.sendFile(path.join(__dirname, 'index.html'))
 
 })
+
+
+
+
 
 app.get('/info/:data', (req, res) => {
   const { data } = req.params
