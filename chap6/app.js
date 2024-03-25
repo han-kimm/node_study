@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan')
@@ -8,23 +11,25 @@ const fs = require('fs')
 
 const app = express();
 
-const router = express.Router()
+const indexRouter = require('./routes/index.js')
+const userRouter = require('./routes/user.js')
 
 app.set('port', process.env.PORT || 3000)
 
-app.use((...params) => {
-  morgan('combined')(...params)
-})
+// app.use((...params) => {
+//   morgan('combined')(...params)
+// })
 // 미들웨어를 작성하고 그 안에서 다른 미들웨어를 실행할 수 있음.
 // 따라서 조건에 따라 다른 미들웨어를 동적 실행 가능
 app.use('/', (...params) => {
   express.static(__dirname, '')(...params)
+  params[2]()
 });
-app.use(cookieParser('timeitem'))
+app.use(cookieParser(process.env.COOKIE_SECRET))
 app.use(session({
   resave: false,
   saveUninitialized: false,
-  secret: 'timeitem',
+  secret: process.env.COOKIE_SECRET,
   cookie: {
     httpOnly: true
   },
@@ -33,20 +38,14 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 // true면 qs라는 외부 라이브러리 사용
 
+app.use('/', indexRouter);
+app.use('/user', userRouter);
+
 app.use((req, res, next) => {
   console.log('Everything Everywhere All at Once')
   next();
   // next(error) 메서드에 인수가 있으면 에러처리가 됨
 })
-
-// app.use('/', router)
-
-// router.get('/', (req, res, next) => {
-//   console.log(1)
-//   next('router');
-//   // res.sendFile(path.join(__dirname, 'index.html'))
-
-// })
 
 try {
   fs.readdirSync('uploads');
@@ -69,7 +68,6 @@ const upload = multer({
 
 app.get('/', (req, res, next) => {
   console.log(2)
-  next()
 
   res.cookie('name', "time", {
     expires: new Date(Date.now() + 1000 * 3),
@@ -82,15 +80,6 @@ app.get('/', (req, res, next) => {
 
   // next('route')
   // next('route') 면 다음 미들웨어가 아니라 다음 라우트로 넘어감
-}, (req, res, next) => {
-  console.log(3)
-  // res.send('라우터')
-  next()
-})
-
-app.get('/', (req, res, next) => {
-  console.log(4)
-  res.sendFile(path.join(__dirname, 'index.html'))
 })
 
 
