@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
+const session = require('express-session')
 
 const app = express();
 
@@ -9,8 +10,23 @@ const router = express.Router()
 
 app.set('port', process.env.PORT || 3000)
 
-app.use(morgan('combined'))
+app.use((...params) => {
+  morgan('combined')(...params)
+})
+// 미들웨어를 작성하고 그 안에서 다른 미들웨어를 실행할 수 있음.
+// 따라서 조건에 따라 다른 미들웨어를 동적 실행 가능
+app.use('/', (...params) => {
+  express.static(__dirname, '')(...params)
+});
 app.use(cookieParser('timeitem'))
+app.use(session({
+  resave: false,
+  saveUninitialized: false,
+  secret: 'timeitem',
+  cookie: {
+    httpOnly: true
+  },
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 // true면 qs라는 외부 라이브러리 사용
@@ -34,7 +50,7 @@ app.get('/', (req, res, next) => {
   console.log(2)
   next()
 
-  res.cookie('name', encodeURIComponent('timetogo'), {
+  res.cookie('name', "time", {
     expires: new Date(Date.now() + 1000 * 3),
     httpOnly: true,
     path: '/',
