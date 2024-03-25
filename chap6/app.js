@@ -3,6 +3,8 @@ const path = require('path');
 
 const app = express();
 
+const router = express.Router()
+
 app.set('port', process.env.PORT || 3000)
 
 app.use((req, res, next) => {
@@ -11,11 +13,30 @@ app.use((req, res, next) => {
   // next(error) 메서드에 인수가 있으면 에러처리가 됨
 })
 
-app.get('/', (req, res) => {
+app.get('/', (req, res, next) => {
+  console.log(2)
+  next('router')
+  // res.json({ name: "it's me" })
+  // json, send, end 한번에 여러개 보내면 에러
+
+  // next('route')
+  // next('route') 면 다음 미들웨어가 아니라 다음 라우트로 넘어감
+}, (req, res, next) => {
+  console.log(3)
+  // res.send('라우터')
+  next()
+})
+
+app.get('/', (req, res, next) => {
+  console.log(4)
+  res.sendFile(path.join(__dirname, 'index.html'))
+})
+
+app.use('/', router)
+
+router.get('/', (req, res, next) => {
   res.sendFile(path.join(__dirname, 'index.html'))
 
-  // res.json({name : "it's me"})
-  // json, send, end 한번에 여러개 보내면 에러
 })
 
 app.get('/info/:data', (req, res) => {
