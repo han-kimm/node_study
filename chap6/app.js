@@ -3,6 +3,8 @@ const path = require('path');
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
+const multer = require('multer')
+const fs = require('fs')
 
 const app = express();
 
@@ -46,6 +48,25 @@ app.use((req, res, next) => {
 
 // })
 
+try {
+  fs.readdirSync('uploads');
+} catch (error) {
+  console.error('uploads 폴더가 없어 uploads 폴더를 생성합니다.');
+  fs.mkdirSync('uploads');
+}
+const upload = multer({
+  storage: multer.diskStorage({
+    destination(req, file, done) {
+      done(null, 'uploads/');
+    },
+    filename(req, file, done) {
+      const ext = path.extname(file.originalname);
+      done(null, path.basename(file.originalname, ext) + Date.now() + ext);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
 app.get('/', (req, res, next) => {
   console.log(2)
   next()
@@ -70,13 +91,19 @@ app.get('/', (req, res, next) => {
 app.get('/', (req, res, next) => {
   console.log(4)
   res.sendFile(path.join(__dirname, 'index.html'))
-
-
 })
 
 
 
-
+app.route('/upload')
+  .get((req, res) => {
+    res.sendFile(path.join(__dirname, 'multipart.html'))
+  })
+  .post(upload.array('image1'), (req, res) => {
+    console.log(req.files)
+    console.log(req.body)
+    res.send('<h1>Saved!</h1><a href="/upload">업로드 또 하기</a>')
+  })
 
 app.get('/info/:data', (req, res) => {
   const { data } = req.params
