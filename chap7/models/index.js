@@ -9,13 +9,12 @@ const db = {};
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 db.sequelize = sequelize;
-db.Sequelize = Sequelize;
 
 db.User = User;
 db.Comment = Comment;
 
-User.init(sequelize);
-Comment.init(sequelize);
+User.initiate(sequelize);
+Comment.initiate(sequelize);
 
 User.associate(db);
 Comment.associate(db);

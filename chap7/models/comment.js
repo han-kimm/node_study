@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
 
 module.exports = class Comment extends Sequelize.Model {
-  static init(sequelize) {
-    return super.init({
+  static initiate(sequelize) {
+    Comment.init({
       comment: {
         type: Sequelize.STRING(100),
         allowNull: false,
