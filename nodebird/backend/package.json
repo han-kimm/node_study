@@ -1,0 +1,25 @@
+{
+  "name": "nodebird-backend",
+  "version": "0.0.1",
+  "description": "노드버드 백엔드 서버",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app -r dotenv/config server.js"
+  },
+  "author": "han-kimm",
+  "license": "MIT",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "morgan": "^1.10.0",
+    "multer": "1.4.5-lts.1",
+    "mysql2": "^3.9.2",
+    "sequelize": "^6.37.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "sequelize-cli": "^6.6.2"
+  }
+}
