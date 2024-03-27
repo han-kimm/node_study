@@ -3,8 +3,8 @@ interface Props {
     id: string;
     nick: string;
   };
-  followingCount: number;
-  followerCount: number;
+  followingCount?: number;
+  followerCount?: number;
 }
 
 const UserInfo = ({ user, followingCount, followerCount }: Props) => {
@@ -13,11 +13,11 @@ const UserInfo = ({ user, followingCount, followerCount }: Props) => {
       <div className="user-name">'안녕하세요! ' + {user.nick} + '님'</div>
       <div className="half">
         <div>팔로잉</div>
-        <div className="count following-count">{followingCount}</div>
+        <div className="count following-count">{followingCount ?? 0}</div>
       </div>
       <div className="half">
         <div>팔로워</div>
-        <div className="count follower-count">{followerCount}</div>
+        <div className="count follower-count">{followerCount ?? 0}</div>
       </div>
       <input id="my-id" type="hidden" value={user.id} />
       <a id="my-profile" href="/profile" className="btn">

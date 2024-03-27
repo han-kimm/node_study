@@ -9,7 +9,7 @@ function App() {
     nick: string;
   }>();
 
-  const fetchUser = useCallback(() => fetch("/api/user").then((res) => res.json()), []);
+  const fetchUser = useCallback(() => fetch("http://localhost:8001/api/user").then((res) => res.json()), []);
 
   useEffect(() => {
     (async () => {
@@ -22,7 +22,7 @@ function App() {
 
   return (
     <div className="container">
-      <div className="profile-wrap">{user?.id ? <UserInfo user={user} followerCount={} /> : <LoginForm />}</div>
+      <div className="profile-wrap">{user?.id ? <UserInfo user={user} /> : <LoginForm />}</div>
     </div>
   );
 }
