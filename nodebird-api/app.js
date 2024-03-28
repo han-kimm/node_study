@@ -47,8 +47,10 @@ app.use(passport.session())
 
 const indexRouter = require('./routes');
 const authRouter = require('./routes/auth.js')
+const v1Router = require('./routes/v1.js')
 app.use('/', indexRouter)
 app.use('/auth', authRouter)
+app.use('/v1', v1Router)
 
 app.use((req, res, next) => {
   //404 Error
