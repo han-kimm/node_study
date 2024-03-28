@@ -1,5 +1,7 @@
 const Domain = require('../models/domain')
 const User = require('../models/user')
+const Post = require('../models/post')
+const Hashtag = require('../models/hashtag')
 const jwt = require('jsonwebtoken')
 
 exports.createToken = async (req, res) => {
@@ -43,4 +45,44 @@ exports.createToken = async (req, res) => {
 }
 exports.tokenTest = async (req, res) => {
   res.json(res.locals.decoded)
+}
+
+exports.getUserPost = (req, res) => {
+  Post.findAll({ where: { userId: res.locals.decoded.id } })
+    .then((posts) => {
+      res.json({
+        code: 200,
+        payload: posts,
+      })
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        code: 500,
+        message: '서버 에러'
+      })
+    })
+
+}
+
+exports.getPostByTag = async (req, res) => {
+  try {
+    const hashtag = await Hashtag.findOne({ where: { title: req.params.title } });
+    if (!hashtag) {
+      return res.status(404).json({
+        code: 404,
+        message: '검색 결과가 없습니다.'
+      })
+    }
+    const posts = await hashtag.getPosts()
+    return res.json({
+      code: 200,
+      payload: posts
+    })
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      code: 500,
+      message: '서버 에러'
+    })
+  }
 }
