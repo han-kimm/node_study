@@ -30,6 +30,7 @@ nunjucks.configure('views', {
 });
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')))
+app.use('/img', express.static(path.join(__dirname, 'uploads')))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET))
@@ -47,8 +48,10 @@ app.use(passport.session())
 
 const pageRouter = require('./routes/page.js')
 const authRouter = require('./routes/auth.js')
+const postRouter = require('./routes/post.js')
 app.use('/', pageRouter);
 app.use('/auth', authRouter)
+app.use('/post', postRouter)
 
 app.use((req, res, next) => {
   //404 Error
