@@ -49,9 +49,11 @@ app.use(passport.session())
 const pageRouter = require('./routes/page.js')
 const authRouter = require('./routes/auth.js')
 const postRouter = require('./routes/post.js')
+const userRouter = require('./routes/user.js')
 app.use('/', pageRouter);
 app.use('/auth', authRouter)
 app.use('/post', postRouter)
+app.use('/user', userRouter)
 
 app.use((req, res, next) => {
   //404 Error
