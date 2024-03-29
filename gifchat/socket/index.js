@@ -1,23 +1,22 @@
-const WebSocket = require('ws')
+const SocketIO = require('socket.io')
 
 module.exports = (server) => {
-  const wss = new WebSocket.Server({ server });
+  const io = SocketIO(server, { path: '/socket.io' });
 
-  wss.on('connection', (ws, req) => {
+  io.on('connection', (socket) => {
+    const req = socket.request;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
-    console.log('새로운 클라이언트 접속', ip)
-    ws.on('message', (message) => {
-      console.log(message.toString())
+    console.log('새로운 클라이언트 접속', ip, socket.id, req.ip)
+    socket.on('reply', (message) => {
+      console.log(message)
     })
-    ws.on('error', console.error)
-    ws.on('close', () => {
-      console.log('클라이언트 접속 종료', ip)
-      clearInterval(ws.interval)
+    socket.on('error', console.error)
+    socket.on('disconnect', () => {
+      console.log('클라이언트 접속 종료', ip, socket.id)
+      clearInterval(socket.interval)
     })
-    ws.interval = setInterval(() => {
-      if (ws.readyState === ws.OPEN) {
-        ws.send('서버 -> 클라이언트')
-      }
+    socket.interval = setInterval(() => {
+      socket.emit('news', '서버에서 클라이언트에게 고한다.')
     }, 3000)
   })
 }
