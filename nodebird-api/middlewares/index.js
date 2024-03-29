@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken')
 const rateLimit = require('express-rate-limit')
+const cors = require('cors');
+const Domain = require('../models/domain');
 
 exports.isLoggedIn = (req, res, next) => {
   if (req.isAuthenticated()) {
@@ -52,4 +54,20 @@ exports.deprecated = (req, res) => {
     code: 410,
     message: '새로운 버전을 사용해주세요.'
   })
+}
+
+exports.customCors = async (req, res, next) => {
+  console.log(new URL(req.get('origin')))
+  const domain = await Domain.findOne({
+    where: { host: new URL(req.get('origin')).host }
+  })
+
+  if (domain) {
+    cors({
+      origin: req.get('origin'),
+      credentials: true
+    })(req, res, next)
+  } else {
+    next()
+  }
 }

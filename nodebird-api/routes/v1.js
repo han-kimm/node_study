@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, deprecated, apiLimit } = require('../middlewares');
+const { verifyToken, deprecated, apiLimit, customCors } = require('../middlewares');
 const { createToken, tokenTest, getUserPost, getPostByTag } = require('../controllers/v1')
 
-
-router.use(apiLimit)
+router.use(customCors)
 
 router.post('/token', createToken);
 router.get('/test', verifyToken, tokenTest)
