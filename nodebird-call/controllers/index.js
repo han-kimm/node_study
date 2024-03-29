@@ -11,23 +11,22 @@ const request = async (req, api) => {
       });
       req.session.jwt = tokenResult.data.token;
     }
-
     return await axios.get(`${URL}${api}`, {
       headers: { authorization: req.session.jwt }
     })
-
   }
   catch (e) {
     if (e.response?.status === 419) {
       delete req.session.jwt;
       return request(req, api)
     }
+    return e.response
   }
 };
 
 exports.getMyPosts = async (req, res, next) => {
   const result = await request(req, '/post/user')
-  res.json(result.data.payload)
+  res.json(result?.data?.payload || result?.data)
 }
 
 exports.searchByTag = async (req, res, next) => {
