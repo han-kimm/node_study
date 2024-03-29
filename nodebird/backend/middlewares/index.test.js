@@ -22,6 +22,7 @@ describe('isLoggedIn', () => {
     expect(res.status).toBeCalledWith(403)
     expect(res.send).toBeCalledWith({ message: '로그인 필요' })
   })
+
 })
 describe('isNotLoggedIn', () => {
   // test('로그인 o, 에러 응답', () => {
