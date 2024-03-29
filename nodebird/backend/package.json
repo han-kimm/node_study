@@ -4,7 +4,7 @@
   "description": "노드버드 백엔드 서버",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "nodemon app -r dotenv/config server.js"
   },
   "author": "han-kimm",
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
+    "jest": "^29.7.0",
     "sequelize-cli": "^6.6.2"
   }
 }
