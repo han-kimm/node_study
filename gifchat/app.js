@@ -4,11 +4,12 @@ const morgan = require('morgan');
 const path = require('path');
 const session = require('express-session');
 const nunjucks = require('nunjucks')
+const connect = require('./schemas')
+const ColorHash = require('color-hash').default
 const dotenv = require('dotenv')
 dotenv.config();
 
 const webSocket = require('./socket');
-
 const app = express();
 
 app.set('port', process.env.PORT || 8005);
@@ -17,6 +18,8 @@ nunjucks.configure('views', {
   express: app,
   watch: true,
 });
+connect();
+
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json());
@@ -31,6 +34,15 @@ app.use(session({
     secure: false
   }
 }))
+app.use((req, res, next) => {
+  if (!req.session.color) {
+    console.log('33')
+    const colorHash = new ColorHash()
+    req.session.color = colorHash.hex(req.sessionID)
+  }
+  next()
+})
+
 
 const indexRouter = require('./routes')
 app.use('/', indexRouter);
@@ -51,4 +63,4 @@ const server = app.listen(app.get('port'), () => {
   console.log(app.get('port'), '번 포트에서 대기중');
 });
 
-webSocket(server)
+webSocket(server, app)
