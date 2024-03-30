@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const ColorHash = require('color-hash').default
 
 const Room = require('../schemas/room');
 const Chat = require('../schemas/chat');
@@ -51,12 +52,14 @@ router.get('/room/:id', async (req, res, next) => {
       return res.redirect('/?error=비밀번호가 틀렸습니다.');
     }
     const { rooms } = io.of('/chat').adapter;
-    if (rooms && rooms[req.params.id] && room.max <= rooms[req.params.id].length) {
+    const users = rooms.get(req.params.id);
+    if (rooms && rooms[req.params.id] && room.max <= users.size) {
       return res.redirect('/?error=허용 인원이 초과하였습니다.');
     }
     const chats = await Chat.find({ room: room._id }).sort('createdAt');
     return res.render('chat', {
       room,
+      users: [...(users ?? [])].map((user) => new ColorHash().hex(user)),
       title: room.title,
       chats,
       user: req.session.color,
@@ -82,13 +85,18 @@ router.delete('/room/:id', async (req, res, next) => {
 });
 
 router.post('/room/:id/chat', async (req, res, next) => {
+  const io = req.app.get('io');
+  const { rooms } = io.of('/chat').adapter;
+  const users = rooms.get(req.params.id);
+  const messageTo = req.body.mode ? [...users].filter(user => new ColorHash().hex(user) === req.body.mode)[0] : req.params.id
+
   try {
     const chat = await Chat.create({
       room: req.params.id,
       user: req.session.color,
       chat: req.body.chat,
     });
-    req.app.get('io').of('/chat').to(req.params.id).emit('chat', chat);
+    req.app.get('io').of('/chat').to(messageTo).emit('chat', chat);
     res.send('ok');
   } catch (error) {
     console.error(error);
