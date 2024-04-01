@@ -74,12 +74,13 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
       if (!success) {
         return res.send('낙찰자가 존재하지 않습니다.')
       }
-      await Good.update({ SoldId: success.UserId }, { where: { id: good.id } });
-      await User.update({
-        money: sequelize.literal(`money - ${success.bid}`),
-      }, {
-        where: { id: success.UserId },
-      });
+      await Promise.all([
+        Good.update({ SoldId: success.UserId }, { where: { id: good.id } }),
+        User.update({
+          money: sequelize.literal(`money - ${success.bid}`),
+        }, {
+          where: { id: success.UserId },
+        })]);
     });
     res.redirect('/');
   } catch (error) {
@@ -118,11 +119,16 @@ router.get('/good/:id', isLoggedIn, async (req, res, next) => {
 router.post('/good/:id/bid', isLoggedIn, async (req, res, next) => {
   try {
     const { bid, msg } = req.body;
-    const good = await Good.findOne({
+    const [good, user] = await Promise.all([Good.findOne({
       where: { id: req.params.id },
       include: { model: Auction },
       order: [[{ model: Auction }, 'bid', 'DESC']],
-    });
+    }), User.findOne({
+      wehre: { id: req.user.id }
+    })]);
+    if (bid > user.money) {
+      return res.status(403).send('보유 자산보다 높은 입찰가는 불가합니다.')
+    }
     if (good.price >= bid) {
       return res.status(403).send('시작 가격보다 높게 입찰해야 합니다.');
     }
