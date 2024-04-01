@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-// const schedule = require('node-schedule');
+const schedule = require('node-schedule');
 
 const { Good, Auction, User } = require('../models');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
@@ -71,6 +71,9 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
         where: { GoodId: good.id },
         order: [['bid', 'DESC']],
       });
+      if (!success) {
+        return res.send('낙찰자가 존재하지 않습니다.')
+      }
       await Good.update({ SoldId: success.UserId }, { where: { id: good.id } });
       await User.update({
         money: sequelize.literal(`money - ${success.bid}`),
