@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const schedule = require('node-schedule');
 
-const { Good, Auction, User } = require('../models');
+const { Good, Auction, User, sequelize } = require('../models');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 
 const router = express.Router();
@@ -56,6 +56,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) => {
+  const t = await sequelize.transaction();
   try {
     const { name, price } = req.body;
     const good = await Good.create({
@@ -70,20 +71,24 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
       const success = await Auction.findOne({
         where: { GoodId: good.id },
         order: [['bid', 'DESC']],
+        transaction: t
       });
       if (!success) {
         return res.send('낙찰자가 존재하지 않습니다.')
       }
       await Promise.all([
-        Good.update({ SoldId: success.UserId }, { where: { id: good.id } }),
+        Good.update({ SoldId: success.UserId }, { where: { id: good.id }, transaction: t }),
         User.update({
           money: sequelize.literal(`money - ${success.bid}`),
         }, {
           where: { id: success.UserId },
+          transaction: t
         })]);
     });
+    await t.commit()
     res.redirect('/');
   } catch (error) {
+    await t.rollback()
     console.error(error);
     next(error);
   }

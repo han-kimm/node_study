@@ -4,6 +4,7 @@ const schedule = require('node-schedule')
 
 module.exports = async () => {
   console.log('checkAuction');
+  const t = await sequelize.transaction();
   try {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1); // 어제 시간
@@ -17,14 +18,17 @@ module.exports = async () => {
       const success = await Auction.findOne({
         where: { GoodId: target.id },
         order: [['bid', 'DESC']],
+        transaction: t
       });
       await Promise.all([
-        Good.update({ SoldId: success.UserId }, { where: { id: good.id } }),
+        Good.update({ SoldId: success.UserId }, { where: { id: good.id }, transaction: t }),
         User.update({
           money: sequelize.literal(`money - ${success.bid}`),
         }, {
           where: { id: success.UserId },
+          transaction: t
         })]);
+      await t.commit();
     });
 
     const ongoing = await Good.findAll({
@@ -39,13 +43,17 @@ module.exports = async () => {
       const job = schedule.scheduleJob(end, async () => {
         const success = await Auction.findOne({
           where: { GoodId: good.id },
-          order: [['bid', 'DESC']]
+          order: [['bid', 'DESC']],
+          transaction: t
         })
-        await good.setSold(success.UserId)
+        await good.setSold(success.UserId, {
+          transaction: t
+        })
         await User.update({
           money: sequelize.literal(`money - ${success.bid}`)
         }, {
-          where: { id: success.UserId }
+          where: { id: success.UserId },
+          transaction: t
         })
       })
       job.on('error', (err) => {
@@ -56,6 +64,7 @@ module.exports = async () => {
       })
     })
   } catch (error) {
+    await t.rollback()
     console.error(error);
   }
 };
